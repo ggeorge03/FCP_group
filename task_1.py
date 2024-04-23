@@ -4,7 +4,7 @@ import matplotlib.cm as cm
 import argparse
 
 
-def calculate_agreement(population, row, col, external=0.0):
+def calculate_agreement(population, row, col, external=0.0): #function to calculate neighbour agreement
     '''
     This function should return the extent to which a cell agrees with its neighbours.
     Inputs:
@@ -21,12 +21,12 @@ def calculate_agreement(population, row, col, external=0.0):
     for r, c in neighbours:
         if 0 <= r < population.shape[0] and 0 <= c < population.shape[1]:
             sum_agreement += population[r, c] * current_value
-    change_in_agreement = current_value * sum_agreement + external
+    change_in_agreement = (current_value * external) + sum_agreement #equation to calulate change in agreement
     return change_in_agreement
 
 
 
-def ising_step(population, alpha=1.0, external=0.0):
+def ising_step(population, alpha=1.0, external=0.0): #function to update Ising model to include changing opinions and external factors.
     '''
     This function performs a single update of the Ising model, including opinion flips and external pull.
     Inputs:
@@ -34,7 +34,7 @@ def ising_step(population, alpha=1.0, external=0.0):
         alpha (float) - tolerance parameter, controls the likely-hood of opinion differences, the higher the value makes flips less likely.
         external (float) - strength of external opinions
     '''
-    n_rows, n_cols = population.shape
+    n_rows, n_cols = population.shape #population grid
     row = np.random.randint(0, n_rows)
     col = np.random.randint(0, n_cols)
     agreement = calculate_agreement(population, row, col, external)
@@ -45,7 +45,7 @@ def ising_step(population, alpha=1.0, external=0.0):
 
 
 
-def plot_ising(im, population):
+def plot_ising(im, population): #function to display model.
     '''
     This function displays a plot of the Ising model.
     '''
@@ -55,7 +55,7 @@ def plot_ising(im, population):
 
 
 
-def test_ising():
+def test_ising(): #function to test model.
     '''
     This function will test the calculate_agreement function in the Ising model
     '''
@@ -89,7 +89,7 @@ def test_ising():
 
 
 
-def ising_main(population, alpha=None, external=0.0):
+def ising_main(population, alpha=None, external=0.0): #Main function
     fig = plt.figure()
     ax = fig.add_subplot(111)
     ax.set_axis_off()
@@ -102,7 +102,7 @@ def ising_main(population, alpha=None, external=0.0):
 
 
 
-def main():
+def main(): #Function to allow user to test if code is correct.
     parser = argparse.ArgumentParser(description="Run Ising model")
     parser.add_argument('-ising_model', action='store_true', help='Run Ising Model')
     parser.add_argument('-test_ising', action='store_true', help='Test Ising Model')

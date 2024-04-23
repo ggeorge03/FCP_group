@@ -16,11 +16,16 @@ def calculate_agreement(population, row, col, external=0.0): #function to calcul
         change_in_agreement (float) - change in agreement
     '''
     current_value = population[row, col] #gets initial cell value
-    neighbours = [(row-1, col), (row+1, col), (row, col-1), (row, col+1)] #define neighbours(above, below, right, left)
+    n_rows, n_cols = population.shape
     sum_agreement = 0
+    neighbours = [
+        ((row - 1) % n_rows, col),
+        ((row + 1) % n_rows, col),
+        (row, (col - 1) % n_cols),
+        (row, (col + 1) % n_cols)
+    ] #define neighbours(above, below, right, left)
     for r, c in neighbours:
-        if 0 <= r < population.shape[0] and 0 <= c < population.shape[1]:
-            sum_agreement += population[r, c] * current_value
+        sum_agreement += population[r, c] * current_value
     change_in_agreement = (current_value * external) + sum_agreement #equation to calulate change in agreement
     return change_in_agreement
 

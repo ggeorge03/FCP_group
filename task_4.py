@@ -1,3 +1,4 @@
+import argparse
 import random
 import numpy as np
 import matplotlib.pyplot as plt
@@ -70,7 +71,7 @@ class Network:
 
         re_wire_prob = the probability of rewiring an edge. Deafult is 0.2.
         '''
-        self.make_ring_network(N)  # Start with a ring network
+        self.make_ring_network(N)  # Start with a ring network.
 
         # For each node, each edge is rewired with a given
         # probability to a new randomly selected node.
@@ -108,24 +109,47 @@ class Network:
                                 color=cmap(node.value))
             ax.add_patch(circle)
 
-            for neighbour_index in range(i+1, num_nodes):
-                if node.connections[neighbour_index]:
-                    neighbour_angle = neighbour_index * 2 * np.pi / num_nodes
-                    neighbour_x = network_radius * np.cos(neighbour_angle)
-                    neighbour_y = network_radius * np.sin(neighbour_angle)
+            for neighbour in node.connections:
+                neighbour_index = neighbour.index
+                neighbour_angle = neighbour_index * 2 * np.pi / num_nodes
+                neighbour_x = network_radius * np.cos(neighbour_angle)
+                neighbour_y = network_radius * np.sin(neighbour_angle)
 
-                    ax.plot((node_x, neighbour_x),
-                            (node_y, neighbour_y), color='black')
-
+                ax.plot((node_x, neighbour_x),
+                        (node_y, neighbour_y), color='black')
         plt.show()
 
 
-network = Network()
+def main():
+    '''g'''
+    network = Network()
 
-network.make_random_network(20, connection_probability=0.3)
-# network.make_ring_network(20, neighbour_range=2)
-# network.make_small_world_network(10)
-network.plot()
+    parser = argparse.ArgumentParser(
+        description='Create plots for a ring network or a small-world network.')
+    parser.add_argument('-ring_network', type=int,
+                        help='Creates ring network with inputted number of nodes')
+    parser.add_argument('-small_world', type=int,
+                        help='Creates small world network with inputted number of nodes')
+    parser.add_argument('-re_wire', type=float, default=0.2,
+                        help='Probability of rewiring for small world network')
+
+    args = parser.parse_args()
+
+    if args.ring_network:
+        network.make_ring_network(args.ring_network)
+        network.plot()
+
+    elif args.small_world:
+        network.make_small_world_network(
+            args.small_world, re_wire_prob=args.re_wire)
+        network.plot()
+
+    else:
+        print('Type either -ring_network <number of nodes> or -small_world <number of nodes> to create a network.')
+
+
+if __name__ == "__main__":
+    main()
 
 
 # def test_networks():

@@ -2,6 +2,7 @@ import argparse
 import random
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib import cm
 
 
 class Node:
@@ -85,6 +86,14 @@ class Network:
                     # Updates and applies the new connection.
                     node.connections[i] = new_neighbour
 
+    def node_degree(self):
+        '''g'''
+        node_degrees = []
+        for node in self.nodes:
+            degree = sum(node.connections)
+            node_degrees.append(degree)
+        return node_degrees
+
     def plot(self):
         '''Plot figures.'''
 
@@ -100,10 +109,21 @@ class Network:
         cmap = plt.get_cmap('hot')
         plt.set_cmap(cmap)
 
+        # node_degrees = self.node_degree()
+
+        # cmap = plt.get_cmap('hot')
+
         for (i, node) in enumerate(self.nodes):
             node_angle = i * 2 * np.pi / num_nodes
             node_x = network_radius * np.cos(node_angle)
             node_y = network_radius * np.sin(node_angle)
+
+            # normalized_degree = node_degrees[i] / max(node_degrees)
+
+            # node_colour = cmap(normalized_degree)
+
+            # circle = plt.Circle((node_x, node_y), 1.2 * num_nodes,
+            #                     color=node_colour)
 
             circle = plt.Circle((node_x, node_y), 1.2 * num_nodes,
                                 color=cmap(node.value))
@@ -123,6 +143,8 @@ class Network:
 def main():
     '''g'''
     network = Network()
+    # network.make_random_network(10)
+    # network.plot()
 
     parser = argparse.ArgumentParser(
         description='Create plots for a ring network or a small-world network.')

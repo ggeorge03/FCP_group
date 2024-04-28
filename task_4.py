@@ -105,7 +105,7 @@ class Network:
             node_x = network_radius * np.cos(node_angle)
             node_y = network_radius * np.sin(node_angle)
 
-            circle = plt.Circle((node_x, node_y), 0.3*num_nodes,
+            circle = plt.Circle((node_x, node_y), 1.2 * num_nodes,
                                 color=cmap(node.value))
             ax.add_patch(circle)
 

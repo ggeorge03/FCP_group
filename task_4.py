@@ -71,7 +71,8 @@ class Network:
 
         re_wire_prob = the probability of rewiring an edge. Deafult is 0.2.
         '''
-        self.make_ring_network(N)  # Start with a ring network.
+        self.make_ring_network(
+            N, neighbour_range=2)  # Start with a ring network.
 
         # For each node, each edge is rewired with a given
         # probability to a new randomly selected node.
@@ -141,6 +142,7 @@ class Network:
 
 
 def test_network():
+    '''tests'''
     network = Network()
 
     # Test make_random_network

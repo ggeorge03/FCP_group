@@ -71,9 +71,9 @@ class Network:
         # sure the connections wrap around the network.
         for i, node in enumerate(self.nodes):
             node.connections = [self.nodes[(i + j) % N]
-                                for j in range(1, neighbour_range + 1)]
+                                for j in range(1, int(neighbour_range + 1))]
 
-    def make_small_world_network(self, N, re_wire_prob=0.2):
+    def make_small_world_network(self, N, re_wire_prob=0.2, neighbour_range=1):
         '''
         This function creates a small world network that starts with a ring
         network and then rewires edges.
@@ -82,7 +82,8 @@ class Network:
 
         re_wire_prob = the probability of rewiring an edge. Deafult is 0.2.
         '''
-        self.make_ring_network(N)  # Start with a ring network.
+        self.make_ring_network(
+            N, neighbour_range)  # Start with a ring network.
 
         # For each node, each edge is rewired with a given
         # probability to a new randomly selected node.
@@ -262,6 +263,8 @@ def main():
                         help='Creates small world network with inputted number of nodes')
     parser.add_argument('-re_wire', type=float, default=0.2,
                         help='Probability of rewiring for small world network')
+    parser.add_argument('-range', type=float, default=1.0,
+                        help='Neighbour range')
     # Ising model
     parser.add_argument('-ising_model', action='store_true',
                         help='Run Ising Model')
@@ -275,12 +278,13 @@ def main():
     args = parser.parse_args()
 
     if args.ring_network:
-        network.make_ring_network(args.ring_network)
+        network.make_ring_network(
+            args.ring_network, neighbour_range=args.range)
         network.plot()
 
     elif args.small_world:
         network.make_small_world_network(
-            args.small_world, re_wire_prob=args.re_wire)
+            args.small_world, re_wire_prob=args.re_wire, neighbour_range=args.range)
         network.plot()
 
     elif args.test_ising:

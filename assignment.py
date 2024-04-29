@@ -25,16 +25,38 @@ class Network:
             self.nodes = nodes
 
     def get_mean_degree(self):
-        '''g'''
-        # Your code  for task 3 goes here
+        '''Add docstring.'''
+        total_degree = sum(sum(node.connections) for node in self.nodes)
+        return total_degree / len(self.nodes)
 
     def get_mean_clustering(self):
-        '''g'''
-        # Your code for task 3 goes here
+        '''Add docstring.'''
+        total_clustering_coefficient = 0
+        for node in self.nodes:
+            neighbors = [self.nodes[i]
+                         for i, conn in enumerate(node.connections) if conn]
+            num_neighbors = len(neighbors)
+            possible_connections = num_neighbors * (num_neighbors - 1) / 2
+            actual_connections = sum(
+                node.connections[nei.index] for nei in neighbors)
+            clustering_coefficient = actual_connections / \
+                possible_connections if possible_connections != 0 else 0
+            total_clustering_coefficient += clustering_coefficient
+
+        mean_clustering_coefficient = total_clustering_coefficient / \
+            len(self.nodes)
+
+        return mean_clustering_coefficient
 
     def get_mean_path_length(self):
-        '''g'''
-        # Your code for task 3 goes here
+        '''Add docstring.'''
+        total_path_length = 0
+
+        for node in self.nodes:
+            distances = self.bfs(node)
+            total_path_length += sum(distances.values())
+
+        return total_path_length / (len(self.nodes) * (len(self.nodes) - 1))
 
     def make_random_network(self, N, connection_probability=0.5):
         '''

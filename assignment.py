@@ -232,60 +232,59 @@ class Network:
         plt.show()
 
 
-# def test_networks():
-#     '''Test function.'''
-#     # Ring network
-#     nodes = []
-#     num_nodes = 10
-#     for node_number in range(num_nodes):
-#         connections = [0 for val in range(num_nodes)]
-#         connections[(node_number-1) % num_nodes] = 1
-#         connections[(node_number+1) % num_nodes] = 1
-#         new_node = Node(0, node_number, connections=connections)
-#         nodes.append(new_node)
-#     network = Network(nodes)
+def test_networks():
+    '''Test function.'''
+    # Ring network
+    nodes = []
+    num_nodes = 10
+    for node_number in range(num_nodes):
+        connections = [0 for val in range(num_nodes)]
+        connections[(node_number - 1) % num_nodes] = 1
+        connections[(node_number + 1) % num_nodes] = 1
+        new_node = Node(0, node_number, connections=connections)
+        nodes.append(new_node)
+    network = Network(nodes)
 
-#     print("Testing ring network")
-#     assert (network.get_mean_degree() == 2), network.get_mean_degree()
-#     assert (network.get_mean_clustering() == 0), network.get_mean_clustering()
-#     assert (network.get_mean_path_length() ==
-#             2.777777777777778), network.get_mean_path_length()
+    print("Testing ring network")
+    assert (network.get_mean_degree() == 2), network.get_mean_degree()
+    assert (network.get_mean_clustering() == 0), network.get_mean_clustering()
+    assert (network.get_mean_path_length() ==
+            2.777777777777778), network.get_mean_path_length()
 
-#     nodes = []
-#     num_nodes = 10
-#     for node_number in range(num_nodes):
-#         connections = [0 for val in range(num_nodes)]
-#         connections[(node_number+1) % num_nodes] = 1
-#         new_node = Node(0, node_number, connections=connections)
-#         nodes.append(new_node)
-#     network = Network(nodes)
+    nodes = []
+    num_nodes = 10
+    for node_number in range(num_nodes):
+        connections = [0 for val in range(num_nodes)]
+        connections[(node_number+1) % num_nodes] = 1
+        new_node = Node(0, node_number, connections=connections)
+        nodes.append(new_node)
+    network = Network(nodes)
 
-#     print("Testing one-sided network")
-#     assert (network.get_mean_degree() == 1), network.get_mean_degree()
-#     assert (network.get_mean_clustering() == 0),  network.get_mean_clustering()
-#     assert (network.get_mean_path_length() ==
-#             5), network.get_mean_path_length()
+    print("Testing one-sided network")
+    assert (network.get_mean_degree() == 1), network.get_mean_degree()
+    assert (network.get_mean_clustering() == 0),  network.get_mean_clustering()
+    assert (network.get_mean_path_length() ==
+            5), network.get_mean_path_length()
 
-#     nodes = []
-#     num_nodes = 10
-#     for node_number in range(num_nodes):
-#         connections = [1 for val in range(num_nodes)]
-#         connections[node_number] = 0
-#         new_node = Node(0, node_number, connections=connections)
-#         nodes.append(new_node)
-#     network = Network(nodes)
+    nodes = []
+    num_nodes = 10
+    for node_number in range(num_nodes):
+        connections = [1 for val in range(num_nodes)]
+        connections[node_number] = 0
+        new_node = Node(0, node_number, connections=connections)
+        nodes.append(new_node)
+    network = Network(nodes)
 
-#     print("Testing fully connected network")
-#     assert (network.get_mean_degree() ==
-#             num_nodes-1), network.get_mean_degree()
-#     assert (network.get_mean_clustering() == 1),  network.get_mean_clustering()
-#     assert (network.get_mean_path_length() ==
-#             1), network.get_mean_path_length()
+    print("Testing fully connected network")
+    assert (network.get_mean_degree() ==
+            num_nodes-1), network.get_mean_degree()
+    assert (network.get_mean_clustering() == 1),  network.get_mean_clustering()
+    assert (network.get_mean_path_length() ==
+            1), network.get_mean_path_length()
 
-#     print("All tests passed")
+    print("All tests passed")
 
 
-# function to calculate neighbour agreement
 def calculate_agreement(population, row, col, external=0.0):
     '''
     This function returns the extent to which a cell agrees with its neighbours.
@@ -329,7 +328,6 @@ def calculate_node_agreement(node, external=0.0):
     return change_in_node_agreement
 
 
-# function to update Ising model to include changing opinions and external factors.
 def ising_step(population, alpha=1.0, external=0.0):
     '''
     This function performs a single update of the Ising model, including opinion
@@ -363,32 +361,29 @@ def ising_step(population, alpha=1.0, external=0.0):
     return population
 
 
-def ising_main_network(network, alpha=None, external=0.0, num_iterations=100):
-    '''
-    This function plots the Ising model over time for the given network.
-    Inputs:
-        network (Network): The network object on which the Ising model is to be applied.
-        alpha (float): Tolerance parameter controlling the likelihood of opinion differences.
-        external (float): Strength of external opinions.
-        num_iterations (int): Number of iterations to run the Ising model.
-    '''
+# def ising_main_network(network, alpha=None, external=0.0, num_iterations=100):
+#     '''
+#     This function plots the Ising model over time for the given network.
+#     Inputs:
+#         network (Network): The network object on which the Ising model is to be applied.
+#         alpha (float): Tolerance parameter controlling the likelihood of opinion differences.
+#         external (float): Strength of external opinions.
+#         num_iterations (int): Number of iterations to run the Ising model.
+#     '''
 
 
 def ising_with_network(N, network):
     '''
     This function runs the Ising model with networks.
     '''
-
-    # Add nodes and connections to the network
-    # Example: Make a random network with 10 nodes and connection probability of 0.3
     network.make_small_world_network(N, 0.2)
     # Run the Ising model on the network
-    ising_main_network(network)
+    # ising_main_network(network)
 
     return network
 
 
-def plot_ising(im, population):  # function to display model.
+def plot_ising(im, population):
     '''
     This function creating animation display of Ising model plot.
     This function is called from the ising_main function.
@@ -399,7 +394,7 @@ def plot_ising(im, population):  # function to display model.
     plt.pause(0.1)
 
 
-def test_ising():  # function to test model.
+def test_ising():
     '''This function will test the calculate_agreement function in the Ising model.'''
 
     print("Testing Ising model calculations")
@@ -431,7 +426,7 @@ def test_ising():  # function to test model.
     print("Tests passed")
 
 
-def ising_main(population, alpha=None, external=0.0):  # Main function
+def ising_main(population, alpha=None, external=0.0):
     '''This function plots the Ising model over time for given population.'''
 
     fig = plt.figure()
@@ -494,11 +489,12 @@ def main():
     elif args.test_ising:
         test_ising()
 
-    # elif args.test_network:
-    #     test_networks()
+    elif args.test_network:
+        test_networks()
 
     elif args.ising_model:
         if args.use_network:
+            # nw.make_small_world_network(args.use_network, 0.2)
             nw = ising_with_network(args.use_network, nw)
             nw.plot(default=False)
         else:

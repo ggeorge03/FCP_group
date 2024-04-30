@@ -32,7 +32,6 @@ class Network:
     def get_mean_degree(self):
         '''Function that is calculating the mean degree of a network, summing up
         all of the connections of all the nodes and dividing by the number of nodes'''
-
         total_degree = sum(sum(node.connections) for node in self.nodes)
         return total_degree / len(self.nodes)
 
@@ -105,29 +104,17 @@ class Network:
             connections = [0 for _ in range(N)]
             self.nodes.append(Node(value, node_number, connections))
 
+        for index, node in enumerate(self.nodes):
+            other_node_index = random.choice(
+                [i for i in range(N) if i != index])
+            node.connections[other_node_index] = 1
+            self.nodes[other_node_index].connections[index] = 1
+
         for (index, node) in enumerate(self.nodes):
             for neighbour_index in range(index + 1, N):
                 if np.random.random() < connection_probability:
                     node.connections[neighbour_index] = 1
                     self.nodes[neighbour_index].connections[index] = 1
-
-        mean_degree = self.get_mean_degree()
-        mean_clustering_coefficent = self.get_mean_clustering()
-        mean_path_length = self.get_mean_path_length()
-
-        # coordinates_of_nodes = {node: (np.random.uniform(
-        #     0, N), np.random.uniform(0, N)) for node in range(N)}
-
-        # plt.figure()
-        # for node in range(N):
-        #     X1, Y1 = coordinates_of_nodes[node]
-        #     plt.plot(X1, Y1, 'o', color='black')
-        #     for neighbour_index, conn in enumerate(self.nodes[node].connections):
-        #         if conn:
-        #             X2, Y2 = coordinates_of_nodes[neighbour_index]
-        #             plt.plot([X1, X2], [Y1, Y2], '-', color='black')
-        # plt.title("Random Network")
-        # plt.show()
 
     def make_ring_network(self, N, neighbour_range=1):
         '''
@@ -149,7 +136,7 @@ class Network:
             node.connections = [self.nodes[(i + j) % N]
                                 for j in range(1, int(neighbour_range + 1))]
 
-    def make_small_world_network(self, N, re_wire_prob=0.2, neighbour_range=1):
+    def make_small_world_network(self, N, re_wire_prob=0.2, neighbour_range=2):
         '''
         This function creates a small world network that starts with a ring
         network and then rewires edges.
@@ -186,24 +173,12 @@ class Network:
         ax.set_ylim([-1.1*network_radius, 1.1*network_radius])
 
         cmap = plt.get_cmap('hot')
-        # node_degrees = self.node_degree()
-        # max_degree = max(node_degrees)
         plt.set_cmap(cmap)
 
         for (i, node) in enumerate(self.nodes):
             node_angle = i * 2 * np.pi / num_nodes
             node_x = network_radius * np.cos(node_angle)
             node_y = network_radius * np.sin(node_angle)
-
-            # normalized_degree = node_degrees[i] / max(node_degrees)
-
-            # node_colour = cmap(normalized_degree)
-
-            # node_degree = node_degrees[i]
-            # circle_colour = cmap(node_degree / max_degree)
-
-            # circle = plt.Circle((node_x, node_y), 1.2 * num_nodes,
-            #                     color=circle_colour)
 
             circle = plt.Circle((node_x, node_y), 1.2 * num_nodes,
                                 color=cmap(node.value))
@@ -219,58 +194,82 @@ class Network:
                         (node_y, neighbour_y), color='black')
         plt.show()
 
+    def plot_network(self, N):
+        '''add'''
+        mean_degree = self.get_mean_degree()
+        mean_clustering_coefficent = self.get_mean_clustering()
+        mean_path_length = self.get_mean_path_length()
 
-# def test_networks():
+        print("Mean degree:", mean_degree)
+        print("Mean clustering coefficient:", mean_clustering_coefficent)
+        print("Mean path length:", mean_path_length)
 
-#     # Ring network
-#     nodes = []
-#     num_nodes = 10
-#     for node_number in range(num_nodes):
-#         connections = [0 for val in range(num_nodes)]
-#         connections[(node_number-1) % num_nodes] = 1
-#         connections[(node_number+1) % num_nodes] = 1
-#         new_node = Node(0, node_number, connections=connections)
-#         nodes.append(new_node)
-#     network = Network(nodes)
+        coordinates_of_nodes = {node: (np.random.uniform(
+            0, N), np.random.uniform(0, N)) for node in range(N)}
 
-#     print("Testing ring network")
-#     assert (network.get_mean_degree() == 2), network.get_mean_degree()
-#     assert (network.get_mean_clustering() == 0), network.get_mean_clustering()
-#     assert (network.get_mean_path_length() ==
-#             2.777777777777778), network.get_mean_path_length()
+        plt.figure()
+        for node in range(N):
+            X1, Y1 = coordinates_of_nodes[node]
+            plt.plot(X1, Y1, 'o', color='black')
+            for neighbour_index, conn in enumerate(self.nodes[node].connections):
+                if conn:
+                    X2, Y2 = coordinates_of_nodes[neighbour_index]
+                    plt.plot([X1, X2], [Y1, Y2], '-', color='black')
+        plt.title("Random Network")
+        plt.show()
 
-#     nodes = []
-#     num_nodes = 10
-#     for node_number in range(num_nodes):
-#         connections = [0 for val in range(num_nodes)]
-#         connections[(node_number+1) % num_nodes] = 1
-#         new_node = Node(0, node_number, connections=connections)
-#         nodes.append(new_node)
-#     network = Network(nodes)
 
-#     print("Testing one-sided network")
-#     assert (network.get_mean_degree() == 1), network.get_mean_degree()
-#     assert (network.get_mean_clustering() == 0),  network.get_mean_clustering()
-#     assert (network.get_mean_path_length() ==
-#             5), network.get_mean_path_length()
+def test_networks():
+    '''Test function.'''
+    # Ring network
+    nodes = []
+    num_nodes = 10
+    for node_number in range(num_nodes):
+        connections = [0 for val in range(num_nodes)]
+        connections[(node_number-1) % num_nodes] = 1
+        connections[(node_number+1) % num_nodes] = 1
+        new_node = Node(0, node_number, connections=connections)
+        nodes.append(new_node)
+    network = Network(nodes)
 
-#     nodes = []
-#     num_nodes = 10
-#     for node_number in range(num_nodes):
-#         connections = [1 for val in range(num_nodes)]
-#         connections[node_number] = 0
-#         new_node = Node(0, node_number, connections=connections)
-#         nodes.append(new_node)
-#     network = Network(nodes)
+    print("Testing ring network")
+    assert (network.get_mean_degree() == 2), network.get_mean_degree()
+    assert (network.get_mean_clustering() == 0), network.get_mean_clustering()
+    assert (network.get_mean_path_length() ==
+            2.777777777777778), network.get_mean_path_length()
 
-#     print("Testing fully connected network")
-#     assert (network.get_mean_degree() ==
-#             num_nodes-1), network.get_mean_degree()
-#     assert (network.get_mean_clustering() == 1),  network.get_mean_clustering()
-#     assert (network.get_mean_path_length() ==
-#             1), network.get_mean_path_length()
+    nodes = []
+    num_nodes = 10
+    for node_number in range(num_nodes):
+        connections = [0 for val in range(num_nodes)]
+        connections[(node_number+1) % num_nodes] = 1
+        new_node = Node(0, node_number, connections=connections)
+        nodes.append(new_node)
+    network = Network(nodes)
 
-#     print("All tests passed")
+    print("Testing one-sided network")
+    assert (network.get_mean_degree() == 1), network.get_mean_degree()
+    assert (network.get_mean_clustering() == 0),  network.get_mean_clustering()
+    assert (network.get_mean_path_length() ==
+            5), network.get_mean_path_length()
+
+    nodes = []
+    num_nodes = 10
+    for node_number in range(num_nodes):
+        connections = [1 for val in range(num_nodes)]
+        connections[node_number] = 0
+        new_node = Node(0, node_number, connections=connections)
+        nodes.append(new_node)
+    network = Network(nodes)
+
+    print("Testing fully connected network")
+    assert (network.get_mean_degree() ==
+            num_nodes-1), network.get_mean_degree()
+    assert (network.get_mean_clustering() == 1),  network.get_mean_clustering()
+    assert (network.get_mean_path_length() ==
+            1), network.get_mean_path_length()
+
+    print("All tests passed")
 
 
 # function to calculate neighbour agreement
@@ -433,13 +432,23 @@ def ising_main(population, alpha=None, external=0.0):  # Main function
         plot_ising(im, population)
 
 
-# def ising_with_network():
-#     pass
+# def network_main(args):
+#     '''add'''
+#     nw = Network()
+#     nw.make_random_network(args.network)
+#     nw.plot_network(nw)
+
+    # def network_main(self, N):
+    #     '''add'''
+    #     self.plot_network(N)
+    #     plt.show()
+    # def ising_with_network():
+    #     pass
 
 
 def main():
     '''g'''
-    network = Network()
+    nw = Network()
 
     parser = argparse.ArgumentParser(
         description='Create plots for a ring network or a small world network.')
@@ -449,7 +458,7 @@ def main():
                         help='Creates small world network with inputted number of nodes')
     parser.add_argument('-re_wire', type=float, default=0.2,
                         help='Probability of rewiring for small world network')
-    parser.add_argument('-range', type=float, default=1.0,
+    parser.add_argument('-range', type=float, default=2.0,
                         help='Neighbour range')
     # Ising model
     parser.add_argument('-ising_model', action='store_true',
@@ -463,21 +472,20 @@ def main():
     parser.add_argument('-use_network', action='store_true', help='Uses network for the Ising model.'
                         )
     # Task 3
-    parser.add_argument("-network", type=int, default=10,
-                        help="size of network")
-    parser.add_argument("-test_network", action='store_true', default=False)
+    parser.add_argument('-network', type=int, help='size of network')
+    parser.add_argument('-test_network', action='store_true', default=False)
 
     args = parser.parse_args()
 
     if args.ring_network:
-        network.make_ring_network(
+        nw.make_ring_network(
             args.ring_network, neighbour_range=args.range)
-        network.plot()
+        nw.plot()
 
     elif args.small_world:
-        network.make_small_world_network(
+        nw.make_small_world_network(
             args.small_world, re_wire_prob=args.re_wire, neighbour_range=args.range)
-        network.plot()
+        nw.plot()
 
     elif args.test_ising:
         test_ising()
@@ -485,19 +493,16 @@ def main():
     # elif args.test_network:
     #     test_networks()
 
-    # elif args.network:
-
-    #     network.make_random_network(args.network, 0.3)
-        # print("Mean degree:", mean_degree)
-        # print("Mean clustering coefficient:", mean_clustering_coefficent)
-        # print("Mean path length:", mean_path_length)
-
     elif args.ising_model:
         population = np.random.choice([1, -1], size=(100, 100))
         ising_main(population, args.alpha, args.external)
 
     elif args.use_network:
         ising_with_network()
+
+    elif args.network:
+        nw.make_random_network(args.network, 0.3)
+        nw.plot_network(args.network)
 
     else:
         print('Type either -ring_network <number of nodes> or -small_world <number of nodes> to create a network.')

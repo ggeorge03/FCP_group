@@ -5,38 +5,44 @@ import numpy as np
 
 
 class Node:
-    '''Class to represent a node in the network'''
+    '''Class for nodes used in a network.'''
 
     def __init__(self, value, number, connections=None):
-        '''Function that initialises a node
-        value = value associated with the node,
-        number = the index of the node,
-        connections = a list to represent the connections between one node to another,
-        with default set to None'''
+        '''
+        Initialises the nodes:
+
+        - number = the index of the node
+        - connections = a list of the connections between each node
+        - value = value associated with the node, opinion strength.
+        '''
         self.index = number
         self.connections = connections
         self.value = value
 
 
 class Network:
-    '''Class that represents a network of nodes.'''
+    '''Class for a network of nodes.'''
 
     def __init__(self, nodes=None):
-        '''Function that initialises a network
-        nodes = a list of notes in the network, with default set to None'''
+        '''
+        Initialises the network:
+        nodes = list of nodes in the network, default = None.
+        '''
         if nodes is None:
             self.nodes = []
         else:
             self.nodes = nodes
 
     def get_mean_degree(self):
-        '''Function that is calculating the mean degree of a network, summing up
-        all of the connections of all the nodes and dividing by the number of nodes'''
+        '''
+        This function calculates the mean degree of a network, summing up
+        all of the connections of all the nodes and dividing by the number of nodes.
+        '''
         total_degree = sum(sum(node.connections) for node in self.nodes)
         return total_degree / len(self.nodes)
 
     def get_mean_clustering(self):
-        '''Function that is calculating the mean clustering coefficient of the network'''
+        '''This function calculates the mean clustering coefficient of the network.'''
 
         total_clustering_coefficient = 0
         for node in self.nodes:
@@ -62,7 +68,7 @@ class Network:
         return mean_clustering_coefficient
 
     def get_mean_path_length(self):
-        '''Function that is calculating the mean path length of the network'''
+        '''This function calculates the mean path length of the network.'''
 
         total_path_length = 0
 
@@ -76,7 +82,7 @@ class Network:
         return mean_path_length
 
     def bfs(self, start_node):
-        '''Function that undergoes a breadth first search from a start node.'''
+        '''This function undergoes a breadth first search from a start node.'''
 
         distances = {node.index: float('inf') for node in self.nodes}
         distances[start_node.index] = 0
@@ -92,9 +98,10 @@ class Network:
     def make_random_network(self, N, connection_probability=0.5):
         '''
         This function makes a *random* network of size N.
-        Each node is connected to each other node with probability p
-        N = the number of nodes in a network
-        connection_probability = the probability of connections between nodes
+        Each node is connected to each other node with probability p:
+
+        - N = number of nodes in the network
+        - connection_probability = the probability of connections between nodes.
         '''
 
         self.nodes = []
@@ -161,8 +168,10 @@ class Network:
                     node.connections[i] = new_neighbour
 
     def plot(self, default=True):
-        '''Plot figures.'''
-
+        '''
+        This function plots figures for the ring network and the small world
+        network, including using the small world network with the Ising model.
+        '''
         fig = plt.figure()
         ax = fig.add_subplot(111)
         ax.set_axis_off()
@@ -198,7 +207,8 @@ class Network:
         plt.show()
 
     def plot_network(self, N):
-        '''add'''
+        '''This is the function for plotting networks using Task 3.'''
+
         mean_degree = self.get_mean_degree()
         mean_clustering_coefficent = self.get_mean_clustering()
         mean_path_length = self.get_mean_path_length()
@@ -278,14 +288,16 @@ class Network:
 # function to calculate neighbour agreement
 def calculate_agreement(population, row, col, external=0.0):
     '''
-    This function should return the extent to which a cell agrees with its neighbours.
-    Inputs:
-        population (numpy array) - grid of opinions
-        row (int)
-        col (int)
-        external (float) - strength of external opinion
-    Returns:
-        change_in_agreement (float) - change in agreement
+    This function returns the extent to which a cell agrees with its neighbours.
+    It takes inputs:
+
+    - population (numpy array), which is a grid of opinions with
+                                row and col taking integer values
+    - external (float), which is the strength of external opinions.
+
+    And returns:
+
+    - change_in_agreement (float), which is the change in agreement.
     '''
     current_value = population[row, col]  # gets initial cell value
     n_rows, n_cols = population.shape
@@ -303,26 +315,33 @@ def calculate_agreement(population, row, col, external=0.0):
     return change_in_agreement
 
 
-def update_agreement_node(node, external=0.0):
+def calculate_node_agreement(node, external=0.0):
     '''
-    add
+    This function (similar to 'calculate_agreement' function) calculates the
+    change in agreement, but neighbours are now the nodes rather than perpendicular 
+    cells in an array.
     '''
     current_value = node.value
     sum_agreement = 0
     for neighbour in node.connections:
         sum_agreement += neighbour.value * current_value
-    new_agreement = (current_value * external) + sum_agreement
-    return new_agreement
+    change_in_node_agreement = (current_value * external) + sum_agreement
+    return change_in_node_agreement
 
 
 # function to update Ising model to include changing opinions and external factors.
 def ising_step(population, alpha=1.0, external=0.0):
     '''
-    This function performs a single update of the Ising model, including opinion flips and external pull.
-    Inputs:
-        population (numpy array) - grid of opinions
-        alpha (float) - tolerance parameter, controls the likely-hood of opinion differences, the higher the value makes flips less likely.
-        external (float) - strength of external opinions
+    This function performs a single update of the Ising model, including opinion
+    flips and external pull.
+    It takes inputs:
+
+    - population (numpy array), which is a grid of opinions with
+                                row and col taking integer values
+    - alpha (float), which is the tolerance parameter, controls the
+                                likely-hood of opinion differences, the
+                                higher the value makes flips less likely.
+    - external (float), which is the strength of external opinions.
     '''
     n_rows, n_cols = population.shape  # population grid
     row = np.random.randint(0, n_rows)
@@ -336,7 +355,7 @@ def ising_step(population, alpha=1.0, external=0.0):
 
     network = Network()
     for node in network.nodes:
-        agreement = update_agreement_node(node, external)
+        agreement = calculate_node_agreement(node, external)
         flip_probability = min(1, np.exp(-agreement / alpha))
         if np.random.rand() < flip_probability:
             node.value *= -1
@@ -371,7 +390,8 @@ def ising_with_network(N, network):
 
 def plot_ising(im, population):  # function to display model.
     '''
-    This function displays a plot of the Ising model.
+    This function creating animation display of Ising model plot.
+    This function is called from the ising_main function.
     '''
     new_im = np.array([[255 if val == -1 else 1 for val in rows]
                       for rows in population]). astype(np.int8)  # ????
@@ -380,9 +400,8 @@ def plot_ising(im, population):  # function to display model.
 
 
 def test_ising():  # function to test model.
-    '''
-    This function will test the calculate_agreement function in the Ising model
-    '''
+    '''This function will test the calculate_agreement function in the Ising model.'''
+
     print("Testing Ising model calculations")
     population = -np.ones((3, 3))
     assert (calculate_agreement(population, 1, 1) == 4), "Test 1"
@@ -413,9 +432,8 @@ def test_ising():  # function to test model.
 
 
 def ising_main(population, alpha=None, external=0.0):  # Main function
-    '''
-    This function plots the Ising model over time for given population.
-    '''
+    '''This function plots the Ising model over time for given population.'''
+
     fig = plt.figure()
     ax = fig.add_subplot(111)
     ax.set_axis_off()
@@ -429,7 +447,11 @@ def ising_main(population, alpha=None, external=0.0):  # Main function
 
 
 def main():
-    '''g'''
+    '''
+    This is the main function where all the flags are added so that the user
+    may interact with different sections of code, creating different plots
+    through the command line.
+    '''
     nw = Network()
 
     parser = argparse.ArgumentParser(

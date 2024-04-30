@@ -160,7 +160,7 @@ class Network:
                     # Updates and applies the new connection.
                     node.connections[i] = new_neighbour
 
-    def plot(self):
+    def plot(self, default=True):
         '''Plot figures.'''
 
         fig = plt.figure()
@@ -179,9 +179,12 @@ class Network:
             node_angle = i * 2 * np.pi / num_nodes
             node_x = network_radius * np.cos(node_angle)
             node_y = network_radius * np.sin(node_angle)
-
-            circle = plt.Circle((node_x, node_y), 1.2 * num_nodes,
-                                color=cmap(node.value))
+            if default:
+                circle = plt.Circle((node_x, node_y), 1.2 * num_nodes,
+                                    color=cmap(node.value))
+            else:
+                circle = plt.Circle((node_x, node_y), 1.2 * num_nodes,
+                                    color=cmap(node.index))
             ax.add_patch(circle)
 
             for neighbour in node.connections:
@@ -352,16 +355,18 @@ def ising_main_network(network, alpha=None, external=0.0, num_iterations=100):
     '''
 
 
-def ising_with_network(N):
+def ising_with_network(N, network):
     '''
     This function runs the Ising model with networks.
     '''
-    network = Network()
+
     # Add nodes and connections to the network
     # Example: Make a random network with 10 nodes and connection probability of 0.3
     network.make_small_world_network(N, 0.2)
     # Run the Ising model on the network
     ising_main_network(network)
+
+    return network
 
 
 def plot_ising(im, population):  # function to display model.
@@ -472,7 +477,8 @@ def main():
 
     elif args.ising_model:
         if args.use_network:
-            ising_with_network(args.use_network)
+            nw = ising_with_network(args.use_network, nw)
+            nw.plot(default=False)
         else:
             population = np.random.choice([1, -1], size=(100, 100))
             ising_main(population, args.alpha, args.external)

@@ -192,8 +192,11 @@ class Network:
                 circle = plt.Circle((node_x, node_y), 1.2 * num_nodes,
                                     color=cmap(node.value))
             else:
+                # network = Network()
+                # im.set_data(np.array([[node.value for node in network.nodes]]))
+                # plt.pause(0.1)
                 circle = plt.Circle((node_x, node_y), 1.2 * num_nodes,
-                                    color=cmap(node.index))
+                                    color=cmap(node.value))
             ax.add_patch(circle)
 
             for neighbour in node.connections:
@@ -325,6 +328,7 @@ def calculate_node_agreement(node, external=0.0):
     for neighbour in node.connections:
         sum_agreement += neighbour.value * current_value
     change_in_node_agreement = (current_value * external) + sum_agreement
+    # print(change_in_node_agreement)
     return change_in_node_agreement
 
 
@@ -361,15 +365,44 @@ def ising_step(population, alpha=1.0, external=0.0):
     return population
 
 
-# def ising_main_network(network, alpha=None, external=0.0, num_iterations=100):
-#     '''
-#     This function plots the Ising model over time for the given network.
-#     Inputs:
-#         network (Network): The network object on which the Ising model is to be applied.
-#         alpha (float): Tolerance parameter controlling the likelihood of opinion differences.
-#         external (float): Strength of external opinions.
-#         num_iterations (int): Number of iterations to run the Ising model.
-#     '''
+def ising_main_network(network, alpha=1.0, external=0.0, num_iterations=100):
+    '''
+    This function runs the Ising model on the given network.
+    Inputs:
+        network (Network): The network object on which the Ising model is to be applied.
+        alpha (float): Tolerance parameter controlling the likelihood of opinion differences.
+        external (float): Strength of external opinions.
+        num_iterations (int): Number of iterations to run the Ising model.
+    '''
+    # fig = plt.figure()
+    # ax = fig.add_subplot(111)
+    # ax.set_axis_off()
+    # im = ax.imshow(np.array(
+    #    [[node.value for node in network.nodes]]), interpolation='none', cmap='RdPu_r')
+
+    for node in network.nodes:
+        agreement = calculate_node_agreement(node, external)
+        flip_probability = min(1, np.exp(-agreement / alpha))
+        if np.random.rand() < flip_probability:
+            node.value *= -1
+
+    # for _ in range(num_iterations):
+    #     for node in network.nodes:
+    #         node_agreement = calculate_node_agreement(node, external)
+    #         flip_probability = min(1, np.exp(-node_agreement / alpha))
+    #         if np.random.rand() < flip_probability:
+    #             node.value *= -1
+        # plot_network(network, im)
+        # plt.pause(0.1)
+
+
+def plot_network(network, im):
+    '''
+    This function updates the Ising model plot with the current network state.
+    '''
+    im.set_data(np.array([[node.value for node in network.nodes]]))
+    plt.pause(0.1)
+    # plt.draw()
 
 
 def ising_with_network(N, network):
@@ -378,7 +411,7 @@ def ising_with_network(N, network):
     '''
     network.make_small_world_network(N, 0.2)
     # Run the Ising model on the network
-    # ising_main_network(network)
+    ising_main_network(network)
 
     return network
 

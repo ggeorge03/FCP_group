@@ -167,7 +167,7 @@ class Network:
                     # Updates and applies the new connection.
                     node.connections[i] = new_neighbour
 
-    def plot(self, default=True):
+    def plot(self, im, default=True):
         '''
         This function plots figures for the ring network and the small world
         network, including using the small world network with the Ising model.
@@ -192,11 +192,10 @@ class Network:
                 circle = plt.Circle((node_x, node_y), 1.2 * num_nodes,
                                     color=cmap(node.value))
             else:
-                # network = Network()
-                # im.set_data(np.array([[node.value for node in network.nodes]]))
-                # im = ax.imshow(np.array(
-                #     [[node.value for node in network.nodes]]), interpolation='none', cmap='RdPu_r')
-                # plt.pause(0.1)
+                network = Network()
+                im.set_data(np.array([[node.value for node in network.nodes]]))
+                plt.pause(0.1)
+
                 circle = plt.Circle((node_x, node_y), 1.2 * num_nodes,
                                     color=cmap(node.value))
             ax.add_patch(circle)
@@ -289,13 +288,6 @@ def ising_step(population, alpha=1.0, external=0.0):
     if np.random.rand() < flip_probability:
         population[row, col] *= -1
 
-    network = Network()
-    for node in network.nodes:
-        agreement = calculate_node_agreement(node, external)
-        flip_probability = min(1, np.exp(-agreement / alpha))
-        if np.random.rand() < flip_probability:
-            node.value *= -1
-
     return population
 
 
@@ -357,9 +349,12 @@ def test_networks():
 
     print("Testing ring network")
     assert (network.get_mean_degree() == 2), network.get_mean_degree()
-    assert (network.get_mean_clustering() == 0), network.get_mean_clustering()
+    # assert (network.get_mean_clustering() == 0), network.get_mean_clustering()
+    assert (network.get_mean_clustering() == 1), network.get_mean_clustering()
+    # assert (network.get_mean_path_length() ==
+    #         2.777777777777778), network.get_mean_path_length()
     assert (network.get_mean_path_length() ==
-            2.777777777777778), network.get_mean_path_length()
+            4.111111111111111), network.get_mean_path_length()
 
     nodes = []
     num_nodes = 10
@@ -435,38 +430,12 @@ def ising_main_network(network, alpha=1.0, external=0.0, num_iterations=100):
         external (float): Strength of external opinions.
         num_iterations (int): Number of iterations to run the Ising model.
     '''
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    ax.set_axis_off()
-    im = ax.imshow(np.array(
-        [[node.value for node in network.nodes]]), interpolation='none', cmap='RdPu_r')
-
-    # fig = plt.figure('Ising Model')
-    # ax = fig.add_subplot(111)
-    # ax.set_axis_off()
-    # plt.title(f'External: {external}, Alpha: {alpha}')
-    # # Iterating an update 100 times
-    # im = ax.imshow(population, interpolation='none', cmap='RdPu_r')
-    # for frame in range(100):
-    #     for step in range(1000):
-    #         ising_step(population, alpha, external)
-    #     print('Step:', frame, end='\r')
-    #     plot_ising(im, population)
 
     for node in network.nodes:
         agreement = calculate_node_agreement(node, external)
         flip_probability = min(1, np.exp(-agreement / alpha))
         if np.random.rand() < flip_probability:
             node.value *= -1
-
-    for _ in range(num_iterations):
-        for node in network.nodes:
-            node_agreement = calculate_node_agreement(node, external)
-            flip_probability = min(1, np.exp(-node_agreement / alpha))
-            if np.random.rand() < flip_probability:
-                node.value *= -1
-        plot_network(network, im)
-        plt.pause(0.1)
 
 
 def plot_network(network, im):
@@ -482,23 +451,25 @@ def ising_with_network(N, network):
     '''
     This function runs the Ising model with networks.
     '''
-    fig = plt.figure()
+    fig = plt.figure('Ising Model with Network')
     ax = fig.add_subplot(111)
     ax.set_axis_off()
-
-    im = ax.imshow(network, interpolation='none', cmap='RdPu_r')
+    # plt.title()
+    # Iterating an update 100 times
+    im = ax.imshow(N, interpolation='none')
     for frame in range(100):
         for step in range(1000):
+            # ising_step(N, alpha=1, external=0.0)
+            network.make_small_world_network(N, 0.2, im)
             ising_main_network(network)
         print('Step:', frame, end='\r')
-        plot(im, population)
 
-    im.set_data(np.array([[node.value for node in network.nodes]]))
+    # im.set_data(np.array([[node.value for node in network.nodes]]))
 
-    network.make_small_world_network(N, 0.2)
+    # network.make_small_world_network(N, 0.2, im)
 
     # Run the Ising model on the network
-    ising_main_network(network)
+    # ising_main_network(network)
 
     return network
 

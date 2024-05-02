@@ -33,6 +33,23 @@ class Network:
         else:
             self.nodes = nodes
 
+    def get_neighbours(self, node_index):
+        '''
+        This function returns the indices of neighboring nodes
+        connected to the node with the specified index.
+        '''
+        if node_index < 0 or node_index >= len(self.nodes):
+            raise IndexError("Node index out of range")
+
+        node = self.nodes[node_index]
+        if node.connections is None:
+            raise ValueError("Node connections not initialized")
+
+        # Find indices of connected nodes
+        neighbours = [i for i, conn in enumerate(
+            node.connections) if conn == 1]
+        return neighbours
+
     def get_mean_degree(self):
         '''
         This function calculates the mean degree of a network, summing up
@@ -45,19 +62,23 @@ class Network:
         '''This function calculates the mean clustering coefficient of the network.'''
 
         total_clustering_coefficient = 0
-        for node in self.nodes:
-            neighbours = [self.nodes[i]
-                          for i, conn in enumerate(node.connections) if conn]
+
+        for node_index in range(len(self.nodes)):
+            neighbours = self.get_neighbours(node_index)
             num_of_neighbours = len(neighbours)
+
             if num_of_neighbours < 2:
                 continue
+
             possible_connections = num_of_neighbours * \
                 (num_of_neighbours - 1) / 2
             actual_connections = 0
+
             for i in range(num_of_neighbours):
                 for c in range(i + 1, num_of_neighbours):
-                    if node.connections[neighbours[i].index] and node.connections[neighbours[c].index]:
+                    if self.nodes[neighbours[i]].connections[neighbours[c]]:
                         actual_connections += 1
+
             clustering_coefficient = actual_connections / \
                 possible_connections if possible_connections != 0 else 0
             total_clustering_coefficient += clustering_coefficient
@@ -68,32 +89,41 @@ class Network:
         return mean_clustering_coefficient
 
     def get_mean_path_length(self):
-        '''This function calculates the mean path length of the network.'''
-
-        total_path_length = 0
+        '''
+        Calculates the mean path length of the network.
+        '''
+        mean_paths = []
 
         for node in self.nodes:
-            distances = self.bfs(node)
-            total_path_length += sum(distances.values())
+            path_lengths = self.bfs(node.index)
+            mean_paths.append(np.mean(path_lengths[path_lengths > 0]))
 
-        mean_path_length = total_path_length / \
-            (len(self.nodes) * (len(self.nodes) - 1))
-
-        return mean_path_length
+        mean_path_length = np.mean(mean_paths)
+        return round(mean_path_length, 15)
 
     def bfs(self, start_node):
         '''This function undergoes a breadth first search from a start node.'''
 
-        distances = {node.index: float('inf') for node in self.nodes}
-        distances[start_node.index] = 0
-        queue = [start_node]
-        while queue:
-            current_node = queue.pop()
-            for neighbour_index, conn in enumerate(current_node.connections):
-                if conn and distances[neighbour_index] == float('inf'):
-                    distances[neighbour_index] = distances[current_node.index] + 1
-                    queue.append(self.nodes[neighbour_index])
-        return distances
+        num_nodes = len(self.nodes)
+        path_lengths = np.zeros(num_nodes, dtype=int)
+        visited = np.zeros(num_nodes, dtype=bool)
+
+        unvisited = [start_node]
+        visited[start_node] = True
+        n = 0
+
+        while unvisited:
+            next_unvisited = []
+            for current_node_index in unvisited:
+                for neighbour_index in self.get_neighbours(current_node_index):
+                    if not visited[neighbour_index]:
+                        path_lengths[neighbour_index] = n + 1
+                        next_unvisited.append(neighbour_index)
+                        visited[neighbour_index] = True
+            unvisited = next_unvisited
+            n += 1
+
+        return path_lengths
 
     def make_random_network(self, N, connection_probability=0.5):
         '''
@@ -349,12 +379,9 @@ def test_networks():
 
     print("Testing ring network")
     assert (network.get_mean_degree() == 2), network.get_mean_degree()
-    # assert (network.get_mean_clustering() == 0), network.get_mean_clustering()
-    assert (network.get_mean_clustering() == 1), network.get_mean_clustering()
-    # assert (network.get_mean_path_length() ==
-    #         2.777777777777778), network.get_mean_path_length()
+    assert (network.get_mean_clustering() == 0), network.get_mean_clustering()
     assert (network.get_mean_path_length() ==
-            4.111111111111111), network.get_mean_path_length()
+            2.777777777777778), network.get_mean_path_length()
 
     nodes = []
     num_nodes = 10
@@ -409,7 +436,7 @@ def ising_main(population, alpha=None, external=0.0):
 def calculate_node_agreement(node, external=0.0):
     '''
     This function (similar to 'calculate_agreement' function) calculates the
-    change in agreement, but neighbours are now the nodes rather than perpendicular 
+    change in agreement, but neighbours are now the nodes rather than perpendicular
     cells in an array.
     '''
     current_value = node.value

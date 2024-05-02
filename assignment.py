@@ -35,17 +35,12 @@ class Network:
 
     def get_neighbours(self, node_index):
         '''
-        This function returns the indices of neighboring nodes
+        This function returns the indices of neighbouring nodes
         connected to the node with the specified index.
         '''
-        if node_index < 0 or node_index >= len(self.nodes):
-            raise IndexError("Node index out of range")
-
         node = self.nodes[node_index]
-        if node.connections is None:
-            raise ValueError("Node connections not initialized")
 
-        # Find indices of connected nodes
+        # Finds the indices of connected nodes.
         neighbours = [i for i, conn in enumerate(
             node.connections) if conn == 1]
         return neighbours
@@ -202,7 +197,7 @@ class Network:
         This function plots figures for the ring network and the small world
         network, including using the small world network with the Ising model.
         '''
-        fig = plt.figure('Small World Network')
+        fig = plt.figure('Small World Network', figsize=(10, 8))
         ax = fig.add_subplot(111)
         ax.set_axis_off()
 
@@ -222,9 +217,6 @@ class Network:
                 circle = plt.Circle((node_x, node_y), 1.2 * num_nodes,
                                     color=cmap(node.value))
             else:
-                network = Network()
-                im.set_data(np.array([[node.value for node in network.nodes]]))
-                plt.pause(0.1)
 
                 circle = plt.Circle((node_x, node_y), 1.2 * num_nodes,
                                     color=cmap(node.value))
@@ -254,7 +246,7 @@ class Network:
         coordinates_of_nodes = {node: (np.random.uniform(
             0, N), np.random.uniform(0, N)) for node in range(N)}
 
-        plt.figure('Task 3: Networks')
+        plt.figure('Task 3: Networks', figsize=(10, 8))
         for node in range(N):
             X1, Y1 = coordinates_of_nodes[node]
             plt.plot(X1, Y1, 'o', color='black')
@@ -264,104 +256,6 @@ class Network:
                     plt.plot([X1, X2], [Y1, Y2], '-', color='black')
         plt.title(f'Random Network with {N} nodes')
         plt.show()
-
-
-def calculate_agreement(population, row, col, external=0.0):
-    '''
-    This function returns the extent to which a cell agrees with its neighbours.
-    It takes inputs:
-
-    - population (numpy array), which is a grid of opinions with
-                                row and col taking integer values
-    - external (float), which is the strength of external opinions.
-
-    And returns:
-
-    - change_in_agreement (float), which is the change in agreement.
-    '''
-    current_value = population[row, col]  # gets initial cell value
-    n_rows, n_cols = population.shape
-    sum_agreement = 0
-    neighbours = [
-        ((row - 1) % n_rows, col),
-        ((row + 1) % n_rows, col),
-        (row, (col - 1) % n_cols),
-        (row, (col + 1) % n_cols)
-    ]  # define neighbours(above, below, right, left)
-    for r, c in neighbours:
-        sum_agreement += population[r, c] * current_value
-    # equation to calulate change in agreement
-    change_in_agreement = (current_value * external) + sum_agreement
-    return change_in_agreement
-
-
-def ising_step(population, alpha=1.0, external=0.0):
-    '''
-    This function performs a single update of the Ising model, including opinion
-    flips and external pull.
-    It takes inputs:
-
-    - population (numpy array), which is a grid of opinions with
-                                row and col taking integer values
-    - alpha (float), which is the tolerance parameter, controls the
-                                likely-hood of opinion differences, the
-                                higher the value makes flips less likely.
-    - external (float), which is the strength of external opinions.
-    '''
-    n_rows, n_cols = population.shape  # population grid
-    row = np.random.randint(0, n_rows)
-    col = np.random.randint(0, n_cols)
-    agreement = calculate_agreement(population, row, col, external)
-
-    # calc prob of flip based on disagreement
-    flip_probability = min(1, np.exp(-agreement / alpha))
-    if np.random.rand() < flip_probability:
-        population[row, col] *= -1
-
-    return population
-
-
-def plot_ising(im, population):
-    '''
-    This function creating animation display of Ising model plot.
-    This function is called from the ising_main function.
-    '''
-    new_im = np.array([[255 if val == -1 else 1 for val in rows]
-                      for rows in population]). astype(np.int8)  # ????
-    im.set_data(new_im)
-    plt.pause(0.1)
-
-
-def test_ising():
-    '''This function will test the calculate_agreement function in the Ising model.'''
-
-    print("Testing Ising model calculations")
-    population = -np.ones((3, 3))
-    assert (calculate_agreement(population, 1, 1) == 4), "Test 1"
-
-    population[1, 1] = 1.
-    assert (calculate_agreement(population, 1, 1) == -4), "Test 2"
-
-    population[0, 1] = 1.
-    assert (calculate_agreement(population, 1, 1) == -2), "Test 3"
-
-    population[1, 0] = 1.
-    assert (calculate_agreement(population, 1, 1) == 0), "Test 4"
-
-    population[2, 1] = 1.
-    assert (calculate_agreement(population, 1, 1) == 2), "Test 5"
-
-    population[1, 2] = 1.
-    assert (calculate_agreement(population, 1, 1) == 4), "Test 6"
-
-    # Testing external pull
-    population = -np.ones((3, 3))
-    assert (calculate_agreement(population, 1, 1, 1) == 3), "Test 7"
-    assert (calculate_agreement(population, 1, 1, -1) == 5), "Test 8"
-    assert (calculate_agreement(population, 1, 1, 10) == -6), "Test 9"
-    assert (calculate_agreement(population, 1, 1, -10) == 14), "Test 10"
-
-    print("Tests passed")
 
 
 def test_networks():
@@ -417,20 +311,33 @@ def test_networks():
     print("All tests passed")
 
 
-def ising_main(population, alpha=None, external=0.0):
-    '''This function plots the Ising model over time for given population.'''
+def calculate_agreement(population, row, col, external=0.0):
+    '''
+    This function returns the extent to which a cell agrees with its neighbours.
+    It takes inputs:
 
-    fig = plt.figure('Ising Model')
-    ax = fig.add_subplot(111)
-    ax.set_axis_off()
-    plt.title(f'External: {external}, Alpha: {alpha}')
-    # Iterating an update 100 times
-    im = ax.imshow(population, interpolation='none', cmap='RdPu_r')
-    for frame in range(100):
-        for step in range(1000):
-            ising_step(population, alpha, external)
-        print('Step:', frame, end='\r')
-        plot_ising(im, population)
+    - population (numpy array), which is a grid of opinions with
+                                row and col taking integer values
+    - external (float), which is the strength of external opinions.
+
+    And returns:
+
+    - change_in_agreement (float), which is the change in agreement.
+    '''
+    current_value = population[row, col]  # gets initial cell value
+    n_rows, n_cols = population.shape
+    sum_agreement = 0
+    neighbours = [
+        ((row - 1) % n_rows, col),
+        ((row + 1) % n_rows, col),
+        (row, (col - 1) % n_cols),
+        (row, (col + 1) % n_cols)
+    ]  # define neighbours(above, below, right, left)
+    for r, c in neighbours:
+        sum_agreement += population[r, c] * current_value
+    # equation to calulate change in agreement
+    change_in_agreement = (current_value * external) + sum_agreement
+    return change_in_agreement
 
 
 def calculate_node_agreement(node, external=0.0):
@@ -444,11 +351,36 @@ def calculate_node_agreement(node, external=0.0):
     for neighbour in node.connections:
         sum_agreement += neighbour.value * current_value
     change_in_node_agreement = (current_value * external) + sum_agreement
-    # print(change_in_node_agreement)
     return change_in_node_agreement
 
 
-def ising_main_network(network, alpha=1.0, external=0.0, num_iterations=100):
+def ising_step(population, alpha=1.0, external=0.0):
+    '''
+    This function performs a single update of the Ising model, including opinion
+    flips and external pull.
+    It takes inputs:
+
+    - population (numpy array), which is a grid of opinions with
+                                row and col taking integer values
+    - alpha (float), which is the tolerance parameter, controls the
+                                likely-hood of opinion differences, the
+                                higher the value makes flips less likely.
+    - external (float), which is the strength of external opinions.
+    '''
+    n_rows, n_cols = population.shape  # population grid
+    row = np.random.randint(0, n_rows)
+    col = np.random.randint(0, n_cols)
+    agreement = calculate_agreement(population, row, col, external)
+
+    # calc prob of flip based on disagreement
+    flip_probability = min(1, np.exp(-agreement / alpha))
+    if np.random.rand() < flip_probability:
+        population[row, col] *= -1
+
+    return population
+
+
+def ising_step_network(network, alpha=1.0, external=0.0):
     '''
     This function runs the Ising model on the given network.
     Inputs:
@@ -465,27 +397,44 @@ def ising_main_network(network, alpha=1.0, external=0.0, num_iterations=100):
             node.value *= -1
 
 
-def plot_network(network, im):
+def plot_ising(im, population):
     '''
-    This function updates the Ising model plot with the current network state.
+    This function creating animation display of Ising model plot.
+    This function is called from the ising_main function.
     '''
-    im.set_data(np.array([[node.value for node in network.nodes]]))
+    new_im = np.array([[255 if val == -1 else 1 for val in rows]
+                      for rows in population]). astype(np.int8)  # ????
+    im.set_data(new_im)
     plt.pause(0.1)
-    # plt.draw()
+
+
+def ising_main(population, alpha=None, external=0.0):
+    '''This function plots the Ising model over time for given population.'''
+
+    fig = plt.figure('Ising Model', figsize=(10, 8))
+    ax = fig.add_subplot(111)
+    ax.set_axis_off()
+    plt.title(f'External: {external}, Alpha: {alpha}')
+    # Iterating an update 100 times
+    im = ax.imshow(population, interpolation='none', cmap='RdPu_r')
+    for frame in range(100):
+        for step in range(1000):
+            ising_step(population, alpha, external)
+        print('Step:', frame, end='\r')
+        plot_ising(im, population)
 
 
 def ising_with_network(N, network):
     '''
     This function runs the Ising model with networks.
     '''
-    fig = plt.figure('Ising Model with Network')
+    fig = plt.figure('Ising Model with Network', figsize=(10, 8))
     ax = fig.add_subplot(111)
     ax.set_axis_off()
 
     network.make_small_world_network(N, 0.2)
 
     num_nodes = len(network.nodes)
-    print(network.nodes)
     if num_nodes == 0:
         return network
     network_radius = num_nodes * 10
@@ -498,7 +447,7 @@ def ising_with_network(N, network):
     for frame in range(100):
         for step in range(1000):
             network.make_small_world_network(N, 0.2)
-            ising_main_network(network)
+            ising_step_network(network)
         print('Step:', frame, end='\r')
 
         if im:
@@ -530,24 +479,38 @@ def ising_with_network(N, network):
         plt.pause(0.1)  # Pause to allow plot update
 
     return network
-    # plt.title()
-    # Iterating an update 100 times
-    # im = ax.imshow(N, interpolation='none')
-    # for frame in range(100):
-    #     for step in range(1000):
-    #         # ising_step(N, alpha=1, external=0.0)
-    #         network.make_small_world_network(N, 0.2, im)
-    #         ising_main_network(network)
-    #     print('Step:', frame, end='\r')
 
-    # im.set_data(np.array([[node.value for node in network.nodes]]))
 
-    # network.make_small_world_network(N, 0.2, im)
+def test_ising():
+    '''This function will test the calculate_agreement function in the Ising model.'''
 
-    # Run the Ising model on the network
-    # ising_main_network(network)
+    print("Testing Ising model calculations")
+    population = -np.ones((3, 3))
+    assert (calculate_agreement(population, 1, 1) == 4), "Test 1"
 
-    return network
+    population[1, 1] = 1.
+    assert (calculate_agreement(population, 1, 1) == -4), "Test 2"
+
+    population[0, 1] = 1.
+    assert (calculate_agreement(population, 1, 1) == -2), "Test 3"
+
+    population[1, 0] = 1.
+    assert (calculate_agreement(population, 1, 1) == 0), "Test 4"
+
+    population[2, 1] = 1.
+    assert (calculate_agreement(population, 1, 1) == 2), "Test 5"
+
+    population[1, 2] = 1.
+    assert (calculate_agreement(population, 1, 1) == 4), "Test 6"
+
+    # Testing external pull
+    population = -np.ones((3, 3))
+    assert (calculate_agreement(population, 1, 1, 1) == 3), "Test 7"
+    assert (calculate_agreement(population, 1, 1, -1) == 5), "Test 8"
+    assert (calculate_agreement(population, 1, 1, 10) == -6), "Test 9"
+    assert (calculate_agreement(population, 1, 1, -10) == 14), "Test 10"
+
+    print("Tests passed")
 
 
 def main():
@@ -603,7 +566,6 @@ def main():
 
     elif args.ising_model:
         if args.use_network:
-            # nw.make_small_world_network(args.use_network, 0.2)
             nw = ising_with_network(args.use_network, nw)
             nw.plot(default=False)
         else:

@@ -56,28 +56,32 @@ class Network:
     def get_mean_clustering(self):
         '''This function calculates the mean clustering coefficient of the network.'''
 
-        total_clustering_coefficient = 0
+        total_clustering_coefficient = 0  # Create total clustering coefficient
 
+        # Iterates through each node in network
         for node_index in range(len(self.nodes)):
+            # Gets neighbours for each node
             neighbours = self.get_neighbours(node_index)
-            num_of_neighbours = len(neighbours)
+            num_of_neighbours = len(neighbours)  # Store number of neighbours
 
-            if num_of_neighbours < 2:
-                continue
-
+            # Calculates total number of possible connections between neighbours.
             possible_connections = num_of_neighbours * \
                 (num_of_neighbours - 1) / 2
-            actual_connections = 0
+            actual_connections = 0  # initialise count for actual connections
 
+            # Iterates through pairs of neighbours to count actual connections
             for i in range(num_of_neighbours):
                 for c in range(i + 1, num_of_neighbours):
+                    # If two neighbours are connected, increase the count
                     if self.nodes[neighbours[i]].connections[neighbours[c]]:
                         actual_connections += 1
 
+            # Calculates clustering coefficient for the node
             clustering_coefficient = actual_connections / \
                 possible_connections if possible_connections != 0 else 0
-            total_clustering_coefficient += clustering_coefficient
+            total_clustering_coefficient += clustering_coefficient  # Adds it to total
 
+        # Calculates the mean clustering coefficient for the network
         mean_clustering_coefficient = total_clustering_coefficient / \
             len(self.nodes)
 
@@ -87,10 +91,13 @@ class Network:
         '''
         Calculates the mean path length of the network.
         '''
-        mean_paths = []
+        mean_paths = []  # Create list to store mean path length of each node
 
+        # Iterates through each node in network
         for node in self.nodes:
+            # Apply a breadth first search that calculates path lengths from the current node to all other nodes
             path_lengths = self.bfs(node.index)
+
             mean_paths.append(np.mean(path_lengths[path_lengths > 0]))
 
         mean_path_length = np.mean(mean_paths)
@@ -206,7 +213,7 @@ class Network:
         ax.set_xlim([-1.1*network_radius, 1.1*network_radius])
         ax.set_ylim([-1.1*network_radius, 1.1*network_radius])
 
-        cmap = plt.get_cmap('hot')
+        cmap = plt.get_cmap('hot')  # Choose colourmap 'hot'
         plt.set_cmap(cmap)
 
         for (i, node) in enumerate(self.nodes):

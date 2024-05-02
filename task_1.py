@@ -23,7 +23,7 @@ def calculate_agreement(population, row, col, external=0.0): #function to calcul
         ((row + 1) % n_rows, col),
         (row, (col - 1) % n_cols),
         (row, (col + 1) % n_cols)
-    ] #define neighbours(above, below, right, left)
+    ] #define neighbours(above, below, right, left) 
     for r, c in neighbours:
         sum_agreement += population[r, c] * current_value
     change_in_agreement = (current_value * external) + sum_agreement #equation to calulate change in agreement

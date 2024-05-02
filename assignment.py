@@ -197,7 +197,7 @@ class Network:
                     # Updates and applies the new connection.
                     node.connections[i] = new_neighbour
 
-    def plot(self, im, default=True):
+    def plot(self, default=True):
         '''
         This function plots figures for the ring network and the small world
         network, including using the small world network with the Ising model.
@@ -481,15 +481,64 @@ def ising_with_network(N, network):
     fig = plt.figure('Ising Model with Network')
     ax = fig.add_subplot(111)
     ax.set_axis_off()
-    # plt.title()
-    # Iterating an update 100 times
-    im = ax.imshow(N, interpolation='none')
+
+    network.make_small_world_network(N, 0.2)
+
+    num_nodes = len(network.nodes)
+    print(network.nodes)
+    if num_nodes == 0:
+        return network
+    network_radius = num_nodes * 10
+    ax.set_xlim([-1.1*network_radius, 1.1*network_radius])
+    ax.set_ylim([-1.1*network_radius, 1.1*network_radius])
+    cmap = plt.get_cmap('hot')
+
+    im = None  # Initialize im to None
+
     for frame in range(100):
         for step in range(1000):
-            # ising_step(N, alpha=1, external=0.0)
-            network.make_small_world_network(N, 0.2, im)
+            network.make_small_world_network(N, 0.2)
             ising_main_network(network)
         print('Step:', frame, end='\r')
+
+        if im:
+            im.remove()  # Remove the previous plot
+        # Plot nodes
+        for node in network.nodes:
+            node_angle = node.index * 2 * np.pi / num_nodes
+            node_x = network_radius * np.cos(node_angle)
+            node_y = network_radius * np.sin(node_angle)
+            circle = plt.Circle((node_x, node_y), 1.2 * num_nodes,
+                                color=cmap(node.value))
+            ax.add_patch(circle)
+
+        # Plot connections
+        for node in network.nodes:
+            node_angle = node.index * 2 * np.pi / num_nodes
+            node_x = network_radius * np.cos(node_angle)
+            node_y = network_radius * np.sin(node_angle)
+            for neighbour in node.connections:
+                neighbour_index = neighbour.index
+                neighbour_angle = neighbour_index * 2 * np.pi / num_nodes
+                neighbour_x = network_radius * np.cos(neighbour_angle)
+                neighbour_y = network_radius * np.sin(neighbour_angle)
+
+                ax.plot((node_x, neighbour_x),
+                        (node_y, neighbour_y), color='black')
+
+        im = ax.imshow(np.zeros((1, 1)), interpolation='none', cmap=cmap)
+        plt.pause(0.1)  # Pause to allow plot update
+
+    return network
+    # plt.title()
+    # Iterating an update 100 times
+    # im = ax.imshow(N, interpolation='none')
+    # for frame in range(100):
+    #     for step in range(1000):
+    #         # ising_step(N, alpha=1, external=0.0)
+    #         network.make_small_world_network(N, 0.2, im)
+    #         ising_main_network(network)
+    #     print('Step:', frame, end='\r')
 
     # im.set_data(np.array([[node.value for node in network.nodes]]))
 

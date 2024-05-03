@@ -3,8 +3,10 @@ import random
 import matplotlib.pyplot as plt
 import numpy as np
 
+
 class Node:
     '''Class for nodes used in a network.'''
+
     def __init__(self, value, number, connections=None):
         '''
         Initialises the nodes:
@@ -16,8 +18,10 @@ class Node:
         self.connections = connections
         self.value = value
 
+
 class Network:
     '''Class for a network of nodes.'''
+
     def __init__(self, nodes=None):
         '''
         Initialises the network:
@@ -33,8 +37,9 @@ class Network:
         This function returns the indices of neighbouring nodes
         connected to the node with the specified index.
         '''
-        node = self.nodes[node_index] # Finds the indices of connected nodes.
-        neighbours = [i for i, conn in enumerate(node.connections) if conn == 1]
+        node = self.nodes[node_index]  # Finds the indices of connected nodes.
+        neighbours = [i for i, conn in enumerate(
+            node.connections) if conn == 1]
         return neighbours
 
     def get_mean_degree(self):
@@ -54,7 +59,8 @@ class Network:
             neighbours = self.get_neighbours(node_index)
             num_of_neighbours = len(neighbours)  # Store number of neighbours
             # Calculates total number of possible connections between neighbours.
-            possible_connections = num_of_neighbours * (num_of_neighbours - 1) / 2
+            possible_connections = num_of_neighbours * \
+                (num_of_neighbours - 1) / 2
             actual_connections = 0  # initialise count for actual connections
             # Iterates through pairs of neighbours to count actual connections
             for i in range(num_of_neighbours):
@@ -84,22 +90,31 @@ class Network:
 
     def bfs(self, start_node):
         '''This function undergoes a breadth first search from a start node.'''
-        num_nodes = len(self.nodes)
+        num_nodes = len(self.nodes)  # Defines number of nodes in network
+
+        # initialises arrays that store path lengths and visited nodes
         path_lengths = np.zeros(num_nodes, dtype=int)
         visited = np.zeros(num_nodes, dtype=bool)
+
+        # initialises queue beginning with start node
         unvisited = [start_node]
-        visited[start_node] = True
-        n = 0
+        visited[start_node] = True  # saved start node as visited
+        n = 0  # path length counter
+
+        # start breadth first search traversal
         while unvisited:
-            next_unvisited = []
+            next_unvisited = []  # list to store nodes to visit next
             for current_node_index in unvisited:
+                # iterates over all neighbours of the current node
                 for neighbour_index in self.get_neighbours(current_node_index):
+                    # check if neighbour has been NOT visited
                     if not visited[neighbour_index]:
                         path_lengths[neighbour_index] = n + 1
                         next_unvisited.append(neighbour_index)
+                        # marks neighbour as visited
                         visited[neighbour_index] = True
-            unvisited = next_unvisited
-            n += 1
+            unvisited = next_unvisited  # updates list of unvisited
+            n += 1  # increments path length counter by 1
         return path_lengths
 
     def make_random_network(self, N, connection_probability=0.5):
@@ -109,18 +124,25 @@ class Network:
         - N = number of nodes in the network
         - connection_probability = the probability of connections between nodes.
         '''
-        self.nodes = []
-        for node_number in range(N): # this is to generate a random float between 0 and 1 to represent the value associated with a node
+        self.nodes = []  # list to store nodes in the network
+        # generates random float between 0 and 1 representing the value associated with a node
+        for node_number in range(N):
             value = np.random.random()
+            # Initialise node connections as zero
             connections = [0 for _ in range(N)]
             self.nodes.append(Node(value, node_number, connections))
+
+        # Creates connections between nodes (task3)
         for index, node in enumerate(self.nodes):
+            # Selects random node to connect to
             other_node_index = random.choice(
                 [i for i in range(N) if i != index])
             node.connections[other_node_index] = 1
             self.nodes[other_node_index].connections[index] = 1
+
         for (index, node) in enumerate(self.nodes):
             for neighbour_index in range(index + 1, N):
+                # checks if connections should be made based on the connection probability
                 if np.random.random() < connection_probability:
                     node.connections[neighbour_index] = 1
                     self.nodes[neighbour_index].connections[index] = 1
@@ -160,7 +182,8 @@ class Network:
                     new_neighbour = random.choice(self.nodes)
                     while new_neighbour == node or new_neighbour in node.connections:
                         new_neighbour = random.choice(self.nodes)
-                    node.connections[i] = new_neighbour # Updates and applies the new connection.
+                    # Updates and applies the new connection.
+                    node.connections[i] = new_neighbour
 
     def plot(self, default=True):
         '''
@@ -170,27 +193,34 @@ class Network:
         fig = plt.figure('Small World Network', figsize=(10, 8))
         ax = fig.add_subplot(111)
         ax.set_axis_off()
+
         num_nodes = len(self.nodes)
         network_radius = num_nodes * 10
         ax.set_xlim([-1.1*network_radius, 1.1*network_radius])
         ax.set_ylim([-1.1*network_radius, 1.1*network_radius])
         cmap = plt.get_cmap('hot')  # Choose colourmap 'hot'
         plt.set_cmap(cmap)
+
         for (i, node) in enumerate(self.nodes):
             node_angle = i * 2 * np.pi / num_nodes
             node_x = network_radius * np.cos(node_angle)
             node_y = network_radius * np.sin(node_angle)
+
             if default:
-                circle = plt.Circle((node_x, node_y), 1.2 * num_nodes, color=cmap(node.value))
+                circle = plt.Circle((node_x, node_y), 1.2 *
+                                    num_nodes, color=cmap(node.value))
             else:
-                circle = plt.Circle((node_x, node_y), 1.2 * num_nodes, color=cmap(node.value))
+                circle = plt.Circle((node_x, node_y), 1.2 *
+                                    num_nodes, color=cmap(node.value))
             ax.add_patch(circle)
+
             for neighbour in node.connections:
                 neighbour_index = neighbour.index
                 neighbour_angle = neighbour_index * 2 * np.pi / num_nodes
                 neighbour_x = network_radius * np.cos(neighbour_angle)
                 neighbour_y = network_radius * np.sin(neighbour_angle)
-                ax.plot((node_x, neighbour_x), (node_y, neighbour_y), color='black')
+                ax.plot((node_x, neighbour_x),
+                        (node_y, neighbour_y), color='black')
         plt.show()
 
     def plot_network(self, N):
@@ -198,20 +228,31 @@ class Network:
         mean_degree = self.get_mean_degree()
         mean_clustering_coefficent = self.get_mean_clustering()
         mean_path_length = self.get_mean_path_length()
+
+        # Prints the calculated network figures
         print("Mean degree:", mean_degree)
         print("Mean clustering coefficient:", mean_clustering_coefficent)
         print("Mean path length:", mean_path_length)
-        coordinates_of_nodes = {node: (np.random.uniform(0, N), np.random.uniform(0, N)) for node in range(N)}
+
+        # Generates random coordinates for each node
+        coordinates_of_nodes = {node: (np.random.uniform(
+            0, N), np.random.uniform(0, N)) for node in range(N)}
         plt.figure('Task 3: Networks', figsize=(10, 8))
+
         for node in range(N):
+            # Gets coords for current node and plots it
             X1, Y1 = coordinates_of_nodes[node]
             plt.plot(X1, Y1, 'o', color='black')
+            # Iterates over connections of current node
             for neighbour_index, conn in enumerate(self.nodes[node].connections):
                 if conn:
                     X2, Y2 = coordinates_of_nodes[neighbour_index]
+                    # Plots line to connect two nodes that are neighbours
                     plt.plot([X1, X2], [Y1, Y2], '-', color='black')
+        # Set variable plot title using fstring based on user input
         plt.title(f'Random Network with {N} nodes')
         plt.show()
+
 
 def test_networks():
     '''Test function.'''  # Ring network
@@ -224,10 +265,13 @@ def test_networks():
         new_node = Node(0, node_number, connections=connections)
         nodes.append(new_node)
     network = Network(nodes)
+
     print("Testing ring network")
     assert (network.get_mean_degree() == 2), network.get_mean_degree()
     assert (network.get_mean_clustering() == 0), network.get_mean_clustering()
-    assert (network.get_mean_path_length() == 2.777777777777778), network.get_mean_path_length()
+    assert (network.get_mean_path_length() ==
+            2.777777777777778), network.get_mean_path_length()
+
     nodes = []
     num_nodes = 10
     for node_number in range(num_nodes):
@@ -236,10 +280,13 @@ def test_networks():
         new_node = Node(0, node_number, connections=connections)
         nodes.append(new_node)
     network = Network(nodes)
+
     print("Testing one-sided network")
     assert (network.get_mean_degree() == 1), network.get_mean_degree()
     assert (network.get_mean_clustering() == 0), network.get_mean_clustering()
-    assert (network.get_mean_path_length() == 5), network.get_mean_path_length()
+    assert (network.get_mean_path_length() ==
+            5), network.get_mean_path_length()
+
     nodes = []
     num_nodes = 10
     for node_number in range(num_nodes):
@@ -248,11 +295,15 @@ def test_networks():
         new_node = Node(0, node_number, connections=connections)
         nodes.append(new_node)
     network = Network(nodes)
+
     print("Testing fully connected network")
-    assert (network.get_mean_degree() == num_nodes-1), network.get_mean_degree()
+    assert (network.get_mean_degree() ==
+            num_nodes-1), network.get_mean_degree()
     assert (network.get_mean_clustering() == 1), network.get_mean_clustering()
-    assert (network.get_mean_path_length() == 1), network.get_mean_path_length()
+    assert (network.get_mean_path_length() ==
+            1), network.get_mean_path_length()
     print("All tests passed")
+
 
 def calculate_agreement(population, row, col, external=0.0):
     '''
@@ -273,9 +324,11 @@ def calculate_agreement(population, row, col, external=0.0):
         (row, (col + 1) % n_cols)
     ]  # define neighbours(above, below, right, left)
     for r, c in neighbours:
-        sum_agreement += population[r, c] * current_value  # equation to calulate change in agreement
+        # equation to calulate change in agreement
+        sum_agreement += population[r, c] * current_value
     change_in_agreement = (current_value * external) + sum_agreement
     return change_in_agreement
+
 
 def calculate_node_agreement(node, external=0.0):
     '''
@@ -283,12 +336,15 @@ def calculate_node_agreement(node, external=0.0):
     change in agreement, but neighbours are now the nodes rather than perpendicular
     cells in an array.
     '''
-    current_value = node.value
+    current_value = node.value  # Gets current value of node (strength of opinion)
     sum_agreement = 0
+
     for neighbour in node.connections:
         sum_agreement += neighbour.value * current_value
+    # Change in agreement is calculated based on external influence
     change_in_node_agreement = (current_value * external) + sum_agreement
     return change_in_node_agreement
+
 
 def ising_step(population, alpha=1.0, external=0.0):
     '''
@@ -309,6 +365,7 @@ def ising_step(population, alpha=1.0, external=0.0):
         population[row, col] *= -1
     return population
 
+
 def ising_step_network(network, alpha=1.0, external=0.0):
     '''
     This function runs the Ising model on the given network.
@@ -318,20 +375,27 @@ def ising_step_network(network, alpha=1.0, external=0.0):
         - external (float) = Strength of external opinions.
         - num_iterations (int) = Number of iterations to run the Ising model.
     '''
+    # Iterates over all nodes in network
     for node in network.nodes:
+        # Calculates agreement for current node
         agreement = calculate_node_agreement(node, external)
+        # Probability of flipping opinion
         flip_probability = min(1, np.exp(-agreement / alpha))
+        # Flip opinion if < probabilty
         if np.random.rand() < flip_probability:
             node.value *= -1
+
 
 def plot_ising(im, population):
     '''
     This function creates the animation display of the Ising model plot.
     This function is called from the ising_main function.
     '''
-    new_im = np.array([[255 if val == -1 else 1 for val in rows] for rows in population]). astype(np.int8)
+    new_im = np.array([[255 if val == -1 else 1 for val in rows]
+                      for rows in population]). astype(np.int8)
     im.set_data(new_im)
     plt.pause(0.1)
+
 
 def ising_main(population, alpha=None, external=0.0):
     '''This function plots the Ising model over time for a given population.'''
@@ -340,31 +404,38 @@ def ising_main(population, alpha=None, external=0.0):
     ax.set_axis_off()
     plt.title(f'External: {external}, Alpha: {alpha}')
     im = ax.imshow(population, interpolation='none', cmap='RdPu_r')
+
     for frame in range(100):  # Iterating an update 100 times
         for step in range(1000):
             ising_step(population, alpha, external)
         print('Step:', frame, end='\r')
         plot_ising(im, population)
 
+
 def ising_with_network(N, network):
     '''This function runs the Ising model with networks.'''
     fig = plt.figure('Ising Model with Network', figsize=(10, 8))
     ax = fig.add_subplot(111)
     ax.set_axis_off()
+
     network.make_small_world_network(N, 0.2)
+
     num_nodes = len(network.nodes)
     if num_nodes == 0:
         return network
+
     network_radius = num_nodes * 10
     ax.set_xlim([-1.1*network_radius, 1.1*network_radius])
     ax.set_ylim([-1.1*network_radius, 1.1*network_radius])
     cmap = plt.get_cmap('hot')
     im = None  # Initialize im to None
-    for frame in range(100): # Iterating an update 100 times
+
+    for frame in range(100):  # Iterating an update 100 times
         for step in range(1000):
             network.make_small_world_network(N, 0.2)
             ising_step_network(network)
         print('Step:', frame, end='\r')
+
         if im:
             im.remove()  # Remove the previous plot
         # Plot nodes
@@ -372,22 +443,26 @@ def ising_with_network(N, network):
             node_angle = node.index * 2 * np.pi / num_nodes
             node_x = network_radius * np.cos(node_angle)
             node_y = network_radius * np.sin(node_angle)
-            circle = plt.Circle((node_x, node_y), 1.2 * num_nodes, color=cmap(node.value))
+            circle = plt.Circle((node_x, node_y), 1.2 *
+                                num_nodes, color=cmap(node.value))
             ax.add_patch(circle)
         # Plot connections
         for node in network.nodes:
             node_angle = node.index * 2 * np.pi / num_nodes
             node_x = network_radius * np.cos(node_angle)
             node_y = network_radius * np.sin(node_angle)
+
             for neighbour in node.connections:
                 neighbour_index = neighbour.index
                 neighbour_angle = neighbour_index * 2 * np.pi / num_nodes
                 neighbour_x = network_radius * np.cos(neighbour_angle)
                 neighbour_y = network_radius * np.sin(neighbour_angle)
-                ax.plot((node_x, neighbour_x), (node_y, neighbour_y), color='black')
+                ax.plot((node_x, neighbour_x),
+                        (node_y, neighbour_y), color='black')
         im = ax.imshow(np.zeros((1, 1)), interpolation='none', cmap=cmap)
-        plt.pause(0.1)  # Pause to allow plot update
+        plt.pause(0.3)  # Pause to allow plot update
     return network
+
 
 def test_ising():
     '''This function will test the calculate_agreement function in the Ising model.'''
@@ -412,42 +487,57 @@ def test_ising():
     assert (calculate_agreement(population, 1, 1, -10) == 14), "Test 10"
     print("Tests passed")
 
+
 def main():
     '''
     This is the main function where all the flags are added so that the user
     may interact with different sections of code, creating different plots
     through the command line.
     '''
-    # Task 4
     nw = Network()
+    # Task 4
     parser = argparse.ArgumentParser(
         description='Create plots for a ring network or a small world network.')
-    parser.add_argument('-ring_network', type=int, help='Creates ring network with inputted number of nodes')
-    parser.add_argument('-small_world', type=int, help='Creates small world network with inputted number of nodes')
-    parser.add_argument('-re_wire', type=float, default=0.2, help='Probability of rewiring for small world network')
-    parser.add_argument('-range', type=float, default=2.0, help='Neighbour range')
+    parser.add_argument('-ring_network', type=int,
+                        help='Creates ring network with inputted number of nodes')
+    parser.add_argument('-small_world', type=int,
+                        help='Creates small world network with inputted number of nodes')
+    parser.add_argument('-re_wire', type=float, default=0.2,
+                        help='Probability of rewiring for small world network')
+    parser.add_argument('-range', type=float, default=2.0,
+                        help='Neighbour range')
     # Task 1
-    parser.add_argument('-ising_model', action='store_true', help='Run Ising Model')
-    parser.add_argument('-test_ising', action='store_true', help='Test Ising Model')
-    parser.add_argument('-external', type=float, default=0.0, help='Strength of external opinion')
-    parser.add_argument('-alpha', type=float, default=1.0, help='Tolerance parameter for opinion differences.')
-    parser.add_argument('-use_network', type=int, help='Uses network for the Ising model.')
+    parser.add_argument('-ising_model', action='store_true',
+                        help='Run Ising Model')
+    parser.add_argument('-test_ising', action='store_true',
+                        help='Test Ising Model')
+    parser.add_argument('-external', type=float, default=0.0,
+                        help='Strength of external opinion')
+    parser.add_argument('-alpha', type=float, default=1.0,
+                        help='Tolerance parameter for opinion differences.')
+    parser.add_argument('-use_network', type=int,
+                        help='Uses network for the Ising model.')
     # Task 3
     parser.add_argument('-network', type=int, help='size of network')
     parser.add_argument('-test_network', action='store_true', default=False)
     args = parser.parse_args()
+
     if args.ring_network:
         nw.make_ring_network(
             args.ring_network, neighbour_range=args.range)
         nw.plot()
+
     elif args.small_world:
         nw.make_small_world_network(
             args.small_world, re_wire_prob=args.re_wire, neighbour_range=args.range)
         nw.plot()
+
     elif args.test_ising:
         test_ising()
+
     elif args.test_network:
         test_networks()
+
     elif args.ising_model:
         if args.use_network:
             nw = ising_with_network(args.use_network, nw)
@@ -455,11 +545,20 @@ def main():
         else:
             population = np.random.choice([1, -1], size=(100, 100))
             ising_main(population, args.alpha, args.external)
+
     elif args.network:
         nw.make_random_network(args.network, 0.3)
         nw.plot_network(args.network)
+
     else:
-        print('Type either -ring_network <number of nodes> or -small_world <number of nodes> to create a network.')
+        print('To get started, please type either: \n'
+              '-ring_network <number of nodes> \n'
+              '-small_world <number of nodes> \n'
+              '-ising_model \n'
+              '-test_ising \n'
+              '-network <number of nodes> \n'
+              '-test_network \n')
+
 
 if __name__ == "__main__":
     main()
